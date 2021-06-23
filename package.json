@@ -4,7 +4,7 @@
   "description": "webpack integrated react demo",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "webpack --config ./scripts/webpack.config.js"
   },
   "repository": {
     "type": "git",
@@ -16,5 +16,9 @@
   "bugs": {
     "url": "https://github.com/yangin/webpack-react-demo/issues"
   },
-  "homepage": "https://github.com/yangin/webpack-react-demo#readme"
+  "homepage": "https://github.com/yangin/webpack-react-demo#readme",
+  "devDependencies": {
+    "webpack": "^5.40.0",
+    "webpack-cli": "^4.7.2"
+  }
 }

@@ -1,0 +1,28 @@
+const path = require('path');
+
+//将相对路径解析为绝对路径，__dirname为当前文件所在的目录下，此处为./webpack文件夹
+function resolve(relatedPath) {
+  return path.join(__dirname, relatedPath)
+}
+
+const webpackConfig = {
+  //打包模式:'production' or development' 
+  mode:'production',
+  
+  //entery为webpack解析的入口（解析各种包依赖关系的入口），而不是项目访问的入口
+  //官网描述：指示 webpack 应该使用哪个模块，来作为构建其内部依赖图的开始
+  entry: {
+    app: [resolve('../src/index.js')], 
+  },
+  
+  //output为项目打包后的输出位置
+  //官网描述：告诉 webpack 在哪里输出它所创建的 bundles，以及如何命名这些文件，默认值为 ./dist
+  output: {
+    path: resolve('../dist'), //path为打包后的输出文件夹位置，此处为 ./dist文件夹
+    filename:'bundle.js'
+  },
+  
+  plugins:[]
+}
+
+module.exports = webpackConfig
