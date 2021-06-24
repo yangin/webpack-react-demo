@@ -1,9 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import './index.css'
 
 const App = () => {
   return (
-    <div>
+    <div className="index-container">
       <span>Hello React</span>
     </div>
   )
