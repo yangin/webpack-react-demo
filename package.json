@@ -17,14 +17,30 @@
     "url": "https://github.com/yangin/webpack-react-demo/issues"
   },
   "homepage": "https://github.com/yangin/webpack-react-demo#readme",
+  "browserslist": {
+    "production": [
+      ">1%",
+      "last 1 versions",
+      "ie>=8",
+      "Firefox> 20",
+      "Chrome > 31"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
   "devDependencies": {
     "@babel/preset-env": "^7.14.7",
     "@babel/preset-react": "^7.14.5",
+    "autoprefixer": "^10.2.6",
     "babel-loader": "^8.2.2",
     "css-loader": "^5.2.6",
     "html-webpack-plugin": "^5.3.2",
     "less": "^4.1.1",
     "less-loader": "^10.0.0",
+    "postcss-loader": "^6.1.0",
     "style-loader": "^2.0.0",
     "webpack": "^5.40.0",
     "webpack-cli": "^4.7.2"

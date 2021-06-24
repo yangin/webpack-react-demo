@@ -41,7 +41,24 @@ const webpackConfig = {
         use: [
           'style-loader',
           'css-loader',
-          {loader: 'less-loader', options: {lessOptions: {javascriptEnabled: true}}} // 当解析antd.less，必须写成下面格式，否则会报Inline JavaScript is not enabled错误
+          {
+            loader: 'postcss-loader',  // postcss需要放在css之前，其他语言(less、sass等)之后，进行解析
+            options: {
+              postcssOptions: {
+                plugins: [
+                  require('autoprefixer')(), // 给css自动添加前缀
+                ],
+              },
+            },
+          },
+          {
+            loader: 'less-loader', 
+            options: {
+              lessOptions: {
+                javascriptEnabled: true
+              }
+            }
+          } // 当解析antd.less，必须写成下面格式，否则会报Inline JavaScript is not enabled错误
         ]
       },
     ]
