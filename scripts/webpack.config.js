@@ -1,3 +1,4 @@
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 const path = require('path');
 
 //将相对路径解析为绝对路径，__dirname为当前文件所在的目录下，此处为./webpack文件夹
@@ -22,7 +23,12 @@ const webpackConfig = {
     filename:'bundle.js'
   },
   
-  plugins:[]
+  plugins:[
+    //为项目生成一个可以访问的html文件，否则全是.js文件，没有访问的页面入口。默认为index.html,路径是基于根目录的相对路径
+    new HtmlWebpackPlugin({
+     template: './scripts/templates/index.html',  //引用模板html文件生成项目的入口文件html
+   }),
+ ]
 }
 
 module.exports = webpackConfig
