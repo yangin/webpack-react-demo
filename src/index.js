@@ -1,11 +1,18 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
+import React from 'react'
+import ReactDOM from 'react-dom'
+import { Button } from 'antd'
+import 'antd/dist/antd.less'
 import './index.less'
 
 const App = () => {
   return (
     <div className="index-container">
-      <span>Hello React</span>
+      <div>
+        <span>Hello React</span>
+      </div>
+      <div>
+        <Button type="primary">Click</Button>
+      </div>
     </div>
   )
 }

@@ -38,7 +38,11 @@ const webpackConfig = {
       },
       {
         test: /\.(css|less)$/,
-        use: ['style-loader','css-loader','less-loader']
+        use: [
+          'style-loader',
+          'css-loader',
+          {loader: 'less-loader', options: {lessOptions: {javascriptEnabled: true}}} // 当解析antd.less，必须写成下面格式，否则会报Inline JavaScript is not enabled错误
+        ]
       },
     ]
   },
