@@ -22,6 +22,22 @@ const webpackConfig = {
     path: resolve('../dist'), //path为打包后的输出文件夹位置，此处为 ./dist文件夹
     filename:'bundle.js'
   },
+
+  //module此处为loader区域，一般文件内容解析，处理放在此处，如babel，less,postcss转换等
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: ['@babel/preset-react'],
+          }
+        }
+      }
+    ]
+  },
   
   plugins:[
     //为项目生成一个可以访问的html文件，否则全是.js文件，没有访问的页面入口。默认为index.html,路径是基于根目录的相对路径
