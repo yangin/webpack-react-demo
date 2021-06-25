@@ -1,4 +1,5 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const path = require('path');
 
 //将相对路径解析为绝对路径，__dirname为当前文件所在的目录下，此处为./webpack文件夹
@@ -38,8 +39,9 @@ const webpackConfig = {
       },
       {
         test: /\.(css|less)$/,
-        use: [
-          'style-loader',
+        use: [{
+            loader: MiniCssExtractPlugin.loader, // MiniCssExtractPlugin.loader 需要在css-loader之后解析
+          },
           'css-loader',
           {
             loader: 'postcss-loader',  // postcss需要放在css之前，其他语言(less、sass等)之后，进行解析
@@ -69,6 +71,7 @@ const webpackConfig = {
     new HtmlWebpackPlugin({
      template: './scripts/templates/index.html',  //引用模板html文件生成项目的入口文件html
    }),
+   new MiniCssExtractPlugin(),
  ]
 }
 
