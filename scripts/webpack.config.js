@@ -63,6 +63,27 @@ const webpackConfig = {
           } // 当解析antd.less，必须写成下面格式，否则会报Inline JavaScript is not enabled错误
         ]
       },
+       //loader-image
+     {
+      test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
+      exclude: /node_modules/,
+      include: [resolve('../public/images')],
+      loader: 'url-loader',
+      options: {
+        limit: 8192,
+        name: '[name].[ext]',
+        outputPath: '/img'
+      }
+    },
+     //loader-font
+    {
+      test: /\.(woff|eot|ttf|svg|gif)$/,
+      loader: 'url-loader',
+      options: {
+        limit: 8192,
+        name: 'font/[name].[ext]'
+      }
+    }
     ]
   },
   
