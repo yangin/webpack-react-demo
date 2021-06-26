@@ -8,7 +8,7 @@ const App = () => {
   return (
     <div className="index-container">
       <div>
-        <span>Hello React</span>
+        <span>Hello React Hot</span>
       </div>
       <div>
         <Button type="primary">Click</Button>

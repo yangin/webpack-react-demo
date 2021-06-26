@@ -9,7 +9,7 @@ function resolve(relatedPath) {
 
 const webpackConfig = {
   //打包模式:'production' or development' 
-  mode:'production',
+  mode:'development',
   
   //entery为webpack解析的入口（解析各种包依赖关系的入口），而不是项目访问的入口
   //官网描述：指示 webpack 应该使用哪个模块，来作为构建其内部依赖图的开始
@@ -22,6 +22,13 @@ const webpackConfig = {
   output: {
     path: resolve('../dist'), //path为打包后的输出文件夹位置，此处为 ./dist文件夹
     filename:'bundle.js'
+  },
+
+  target: 'web', //必须添加此配置，才能实现浏览器的实时刷新
+  devServer: {
+    port: 8090,
+    contentBase: resolve('../public'),  //当存在静态资源时，此项必须有。指向开发的静态资源目录，配合url-loader的outPath，匹配文件中的静态资源引用地址。
+    open: true,    //启动后是否在浏览器自动打开
   },
 
   //module此处为loader区域，一般文件内容解析，处理放在此处，如babel，less,postcss转换等
@@ -72,7 +79,7 @@ const webpackConfig = {
       options: {
         limit: 8192,
         name: '[name].[ext]',
-        outputPath: '/img'
+        outputPath: '/images'
       }
     },
      //loader-font

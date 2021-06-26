@@ -4,7 +4,8 @@
   "description": "webpack integrated react demo",
   "main": "index.js",
   "scripts": {
-    "build": "webpack --config ./scripts/webpack.config.js"
+    "build": "webpack --config ./scripts/webpack.config.js",
+    "start": "webpack serve --config ./scripts/webpack.config.js"
   },
   "repository": {
     "type": "git",
@@ -46,7 +47,8 @@
     "style-loader": "^2.0.0",
     "url-loader": "^4.1.1",
     "webpack": "^5.40.0",
-    "webpack-cli": "^4.7.2"
+    "webpack-cli": "^4.7.2",
+    "webpack-dev-server": "^3.11.2"
   },
   "dependencies": {
     "@babel/core": "^7.14.6",
