@@ -638,3 +638,184 @@ npm run start
 并在编辑器中修改文件内容，会在浏览器中看到内容的实时更新。
 
 至此，完成了webpack的热更新功能集成。
+
+## 五、将配置文件拆分成Prod与Dev环境
+
+如上，已完成了一个简单的react-webpack框架的集成与使用，但真正用到生产环境中时，咱们还需要做的更精细一些。
+
+#### 第一步：安装webpack-merge
+
+```
+npm install -D webpakc-merge
+```
+
+#### 第二步：拆配置文件
+
+将之前的单个webpack.config.js文件拆成 3个文件
+
+> `webpack.base.config.js`: 用来管理通用dev与prod环境下的通用配置项
+
+> `webpack.dev.config.js`: 用来管理只存在于dev环境下的配置项，如 dev-server
+
+> `webpack.prod.config.js`: 用来管理只存在与prod环境系的配置项
+
+结果分别如下：
+webpack.base.config.js
+
+```
+const path = require('path')
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+
+// 将相对路径解析为绝对路径，__dirname为当前文件所在的目录下，此处为./webpack文件夹
+function resolve (relatedPath) {
+  return path.join(__dirname, relatedPath)
+}
+
+const webpackConfigBase = {
+  // entery为webpack解析的入口（解析各种包依赖关系的入口），而不是项目访问的入口
+  // 官网描述：指示 webpack 应该使用哪个模块，来作为构建其内部依赖图的开始
+  entry: {
+    app: [ resolve('../src/index.js') ]
+  },
+
+  // output为项目打包后的输出位置
+  // 官网描述：告诉 webpack 在哪里输出它所创建的 bundles，以及如何命名这些文件，默认值为 ./dist
+  output: {
+    path: resolve('../dist'), // path为打包后的输出文件夹位置，此处为 ./dist文件夹
+    filename: 'bundle.js' // 打包后的入口文件的文件名
+  },
+
+  // module此处为loader区域，一般文件内容解析，处理放在此处，如babel，less,postcss转换等
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: [ '@babel/preset-react' ]
+          }
+        }
+      },
+      {
+        test: /\.(css|less)$/,
+        use: [ {
+          loader: MiniCssExtractPlugin.loader // MiniCssExtractPlugin.loader 需要在css-loader之后解析
+        },
+        'css-loader',
+        {
+          loader: 'postcss-loader', // postcss需要放在css之前，其他语言(less、sass等)之后，进行解析
+          options: {
+            postcssOptions: {
+              plugins: [
+                require('autoprefixer')() // 给css自动添加前缀
+              ]
+            }
+          }
+        },
+        {
+          loader: 'less-loader',
+          options: {
+            lessOptions: {
+              javascriptEnabled: true
+            }
+          }
+        } // 当解析antd.less，必须写成下面格式，否则会报Inline JavaScript is not enabled错误
+        ]
+      },
+      // loader-image
+      {
+        test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
+        exclude: /node_modules/,
+        include: [ resolve('../public/images') ],
+        loader: 'url-loader',
+        options: {
+          limit: 8192,
+          name: '[name].[ext]',
+          outputPath: '/images'
+        }
+      },
+      // loader-font
+      {
+        test: /\.(woff|eot|ttf|svg|gif)$/,
+        loader: 'url-loader',
+        options: {
+          limit: 8192,
+          name: 'font/[name].[ext]'
+        }
+      }
+    ]
+  },
+
+  plugins: [
+    // 为项目生成一个可以访问的html文件，否则全是.js文件，没有访问的页面入口。默认为index.html,路径是基于根目录的相对路径
+    new HtmlWebpackPlugin({
+      template: './scripts/templates/index.html' // 引用模板html文件生成项目的入口文件html
+    }),
+    new MiniCssExtractPlugin()
+  ]
+}
+module.exports = webpackConfigBase
+```
+
+webpack.dev.config.js
+
+```
+const path = require('path')
+const { merge } = require('webpack-merge')
+const webpackConfigBase = require('./webpack.base.config')
+
+function resolve (relatedPath) {
+  return path.join(__dirname, relatedPath)
+}
+
+const webpackConfigDev = {
+  mode: 'development', // 设置为development模式
+
+  target: 'web', // 必须添加此配置，才能实现浏览器的实时刷新
+  // devServer 为热更新服务，通过hot:true来启动
+  devServer: {
+    contentBase: resolve('../public'), // 当存在静态资源时，此项必须有。指向开发的静态资源目录，配合url-loader的outPath，匹配文件中的静态资源引用地址。
+    hot: true,
+    open: true, // 启动后是否在浏览器自动打开
+    host: 'localhost',
+    port: 8090
+    // historyApiFallback: true, // 为true时，当路径找不到时，即404时，会重新加载本页面，否则报错。当react-router为BrowserRouter时，需要配置为true,否则原路径刷新报错，此时也可以用HashRoute来代替
+    // compress: true, // enable gzip compression
+    // proxy: { // proxy URLs to backend development server
+    //   '/api': 'http://localhost:3000'
+    // },
+  }
+}
+
+module.exports = merge(webpackConfigBase, webpackConfigDev)
+
+```
+
+webpack.prod.config.js
+
+```
+const { merge } = require('webpack-merge')
+const webpackConfigBase = require('./webpack.base.config')
+
+const webpackConfigProd = {
+  mode: 'production'
+}
+module.exports = merge(webpackConfigBase, webpackConfigProd)
+
+```
+
+#### 第三步：修改package.json中webpack的启动命令
+
+package.json
+
+```json
+  "scripts":{
+    "build": "webpack --config ./scripts/webpack.prod.config.js",
+    "start": "webpack serve --config ./scripts/webpack.dev.config.js",
+  },
+```
+
+至此，完成了webpack生产环境与开发环境下配置文件的拆分。
