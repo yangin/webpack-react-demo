@@ -819,3 +819,92 @@ package.json
 ```
 
 至此，完成了webpack生产环境与开发环境下配置文件的拆分。
+
+## 六、分离manifest
+
+在使用 webpack 构建的典型应用程序或站点中，有三种主要的代码类型：
+
+* 你或你的团队编写的源码。
+* 你的源码会依赖的任何第三方的 library 或 "vendor" 代码。
+* webpack 的 runtime 和 manifest，管理所有模块的交互。
+
+manifest包含了对每个chunk、一些代码变量的的映射，runtime 会通过 manifest 来解析和加载模块。
+
+### manifest概念
+
+当 compiler 开始执行、解析和映射应用程序时，它会保留所有模块的详细要点。这个数据集合称为 "manifest"，当完成打包并发送到浏览器时，runtime 会通过 manifest 来解析和加载模块。
+
+无论你选择哪种 模块语法，那些 import 或 require 语句现在都已经转换为 __webpack_require__ 方法，此方法指向模块标识符(module identifier)。通过使用 manifest 中的数据，runtime 将能够检索这些标识符，找出每个标识符背后对应的模块。
+
+![](https://raw.githubusercontent.com/yangin/code-assets/main/webpack-react-demo/images/6-0-1.png)
+
+当打开一个 index.html 文件时，需要通过manifest数据来加载与链接打包后的chunk
+
+默认情况下，manifest代码会与其他部分代码一起打包进 bundle.js文件，且一般的文件的头部与尾部
+
+### 为什么要分离manifest
+
+当使用hash来作为bundle的文件名时(为了使用缓存来提高加载及编译速度)，每次内容修改后会产生2个部分的变化
+
+* 修改内容时，代码变化导致的相应chunk的变化（会重新打一个新的chunk包，带来的chunk的 hash的变化）
+* 重新构建时，manifest数据的变化（因为包含了对每个chunk的映射，所以当chunk的hash name改变时，manifest数据也会发生变化。甚至可以理解为，每次构建，manifest数据都会发生变化）
+
+为了避免产生不必要的hash更改，可以将一些经常变化，或者基本不会产生变化的部分单独拆分成一个chunk。如当将react部分的library单独拆分成一个chunk，不包含manifest的内容时，每次业务代码的修改，都不会让这个chunk的hash发生改变，
+从而能利用缓存来加载，提高编译与加载效率。
+
+### 为什么要内联到html中
+
+因为拆出来的runtime chunk文件非常小，大约2kb左右，内联到html中，可以减少一次 http请求。
+
+### 拆分步骤
+
+#### 第1步： 安装react-dev-utils
+
+```
+npm install -D react-dev-utils
+```
+
+react-dev-utils 包是 create-react-app 脚手架用来webpack打包的一个工具库，这里主要用到他的 InlineChunkHtmlPlugin 插件，支持对于多entry的内联。也有inline-manifest-webpack-plugin等，不过貌似只能支持一个 entry。
+
+#### 第二步：在webpack.config.base.js文件里配置相关使用
+
+webpack.config.base.js
+
+```javascript
+const InlineChunkHtmlPlugin = require('react-dev-utils/InlineChunkHtmlPlugin')
+
+const webpackConfigBase = {
+  ...
+  // output为项目打包后的输出位置
+  // 官网描述：告诉 webpack 在哪里输出它所创建的 bundles，以及如何命名这些文件，默认值为 ./dist
+  output: {
+    path: resolve('../dist'), // path为打包后的输出文件夹位置，此处为 ./dist文件夹
+    filename: 'js/[name].[hash].js', // 打包后的入口文件的文件名
+    chunkFilename: 'chunks/[name].[hash:4].js' // 非入口文件的文件名
+  },
+  optimization: {
+    // 将runtime文件单独拆分出来，因为每次打包或者更改时,runtime内容都会更改，若将其与包一起打包，则每次更新必然是所有包的更新，效率很低
+    // 所以一般将其拆除，直接内联到html中
+    runtimeChunk: {
+      name: entrypoint => `runtime-${entrypoint.name}`
+    }
+  },
+
+  plugins: [
+    // 为项目生成一个可以访问的html文件，否则全是.js文件，没有访问的页面入口。默认为index.html,路径是基于根目录的相对路径
+    new HtmlWebpackPlugin({
+      template: './scripts/templates/index.html' // 引用模板html文件生成项目的入口文件html
+    }),
+    new InlineChunkHtmlPlugin(HtmlWebpackPlugin, [ /runtime-.+[.]js/ ]), // 内联也可以尝试inline-manifest-webpack-plugin
+    ...
+  ]
+  ...
+```
+
+说明：这里的 runtimeChunk的写法是针对多入口文件的，通过不同的entry产生不同的runtime chunk,然后再通过inlineChunkHtmlPlugin内连到不同的html文件中。
+
+#### 第三步：打包验证结果
+
+![](https://raw.githubusercontent.com/yangin/code-assets/main/webpack-react-demo/images/6-3-1.png)
+
+如图，可见html中多了一段 `<script>` 脚本，其就是提取出来的manifest代码片段，与js文件夹下的 runtime-app.[hash].js内容一致
