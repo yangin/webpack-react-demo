@@ -11,7 +11,8 @@ const webpackConfigBase = {
   // entery为webpack解析的入口（解析各种包依赖关系的入口），而不是项目访问的入口
   // 官网描述：指示 webpack 应该使用哪个模块，来作为构建其内部依赖图的开始
   entry: {
-    app: [ resolve('../src/index.js') ]
+    app: [ resolve('../src/index.js') ],
+    dashboard: [ resolve('../src/dashboard.js') ]
   },
 
   // output为项目打包后的输出位置
@@ -96,9 +97,21 @@ const webpackConfigBase = {
   plugins: [
     // 为项目生成一个可以访问的html文件，否则全是.js文件，没有访问的页面入口。默认为index.html,路径是基于根目录的相对路径
     new HtmlWebpackPlugin({
-      template: './scripts/templates/index.html' // 引用模板html文件生成项目的入口文件html
+      filename: 'index.html', // 打包输出的html文件名,当多入口时，必须配置此项，否则会报输出文件名相同错误
+      template: './scripts/templates/index.html', // 引用模板html文件生成项目的入口文件html
+      chunks: [ 'index' ] // 将指定名称的脚本注入到html模板中
+      // templateContent: require('./templates/index'),  // 将内容直接覆盖到html模板中，通常从js文件中引入
+      // inject: false  // 如果为false, 则禁止在html模板中注入脚本
     }),
-    new MiniCssExtractPlugin()
+    new HtmlWebpackPlugin({
+      filename: 'dashboard.html', // 打包输出的html文件名
+      template: './scripts/templates/dashboard.html', // 引用模板html文件生成项目的入口文件html
+      chunks: [ 'dashboard' ] // 将指定名称的脚本注入到html模板中
+    }),
+    new MiniCssExtractPlugin({
+      filename: 'css/[name].[contenthash].css',
+      chunkFilename: 'css/[name].[contenthash].[id].css'
+    })
   ]
 }
 module.exports = webpackConfigBase
