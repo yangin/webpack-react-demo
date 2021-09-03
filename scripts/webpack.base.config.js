@@ -18,7 +18,16 @@ const webpackConfigBase = {
   // 官网描述：告诉 webpack 在哪里输出它所创建的 bundles，以及如何命名这些文件，默认值为 ./dist
   output: {
     path: resolve('../dist'), // path为打包后的输出文件夹位置，此处为 ./dist文件夹
-    filename: 'bundle.js' // 打包后的入口文件的文件名
+    filename: 'js/[name].[hash].js', // 打包后的入口文件的文件名
+    chunkFilename: 'chunks/[name].[hash:4].js' // 非入口文件的文件名
+  },
+
+  optimization: {
+    // 将runtime文件单独拆分出来，因为每次打包或者更改时,runtime内容都会更改，若将其与包一起打包，则每次更新必然是所有包的更新，效率很低
+    // 所以一般将其拆除，直接内联到html中
+    runtimeChunk: {
+      name: entrypoint => `runtime-${entrypoint.name}`
+    }
   },
 
   // module此处为loader区域，一般文件内容解析，处理放在此处，如babel，less,postcss转换等
