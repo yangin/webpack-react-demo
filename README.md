@@ -908,3 +908,85 @@ const webpackConfigBase = {
 ![](https://raw.githubusercontent.com/yangin/code-assets/main/webpack-react-demo/images/6-3-1.png)
 
 如图，可见html中多了一段 `<script>` 脚本，其就是提取出来的manifest代码片段，与js文件夹下的 runtime-app.[hash].js内容一致
+
+## 七、多入口文件处理
+
+#### 第一步：新建一个html模板
+
+> 在 scripts/templates 目录下新建html文件，并给定id等作为选择器，方便js定位
+dashboard.html
+
+```html
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>Dashboard</title>
+</head>
+
+<body>
+    <div id="dashboard" class="root"></div>
+</body>
+
+</html>
+```
+
+#### 第二步：新建一个js入口文件，并指定上一步html的节点作为根节点
+
+src/dashboard.js
+
+```javascript
+import React from 'react'
+import ReactDOM from 'react-dom'
+
+const App = () => {
+  return (
+    <div>
+      Hello Dashboard
+    </div>
+  )
+}
+
+ReactDOM.render(<App />, document.getElementById('dashboard'))
+```
+
+#### 第三步：在webpack.base.config.js文件中添加多文件入口
+
+```javascript
+const webpackConfigBase = {
+  ...
+  entry: {
+    ...
+    dashboard: [ resolve('../src/dashboard.js') ]
+  },
+  ...
+  plugins: [
+    // 为项目生成一个可以访问的html文件，否则全是.js文件，没有访问的页面入口。默认为index.html,路径是基于根目录的相对路径
+    new HtmlWebpackPlugin({
+      filename: 'index.html', // 打包输出的html文件名,当多入口时，必须配置此项，否则会报输出文件名相同错误
+      template: './scripts/templates/index.html' // 引用模板html文件生成项目的入口文件html
+    }),
+    new HtmlWebpackPlugin({
+      filename: 'dashboard.html', // 打包输出的html文件名
+      template: './scripts/templates/dashboard.html' // 引用模板html文件生成项目的入口文件html
+    }),
+    ...
+  ]
+  ...
+}
+```
+
+注意：HtmlWebpackPlugin插件的filename字段，当多入口时，必须配置此项，否则会报输出文件名相同错误
+
+#### 第四步：打包并验证结果
+
+```
+npm run build
+```
+
+打包后结果如图
+![](https://raw.githubusercontent.com/yangin/code-assets/main/webpack-react-demo/images/7-4-1.png)
+
+打开浏览器访问效果
+![](https://raw.githubusercontent.com/yangin/code-assets/main/webpack-react-demo/images/7-4-2.png)
