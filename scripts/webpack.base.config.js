@@ -1,24 +1,26 @@
-const path = require('path')
+const { resolve } = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 
-// 将相对路径解析为绝对路径，__dirname为当前文件所在的目录下，此处为./webpack文件夹
-function resolve (relatedPath) {
-  return path.join(__dirname, relatedPath)
-}
+// 获取当前的环境变量process.env.NODE_ENV
+// NODE_ENV值一般在package.json文件中通过脚本命令定义，如cross-env NODE_ENV=production
+const isProduction = process.env.NODE_ENV === 'production'
+
+const PATH_ROOT = resolve(__dirname, '../')
+const PATH_SRC_ROOT = resolve(__dirname, '../src/')
 
 const webpackConfigBase = {
   // entery为webpack解析的入口（解析各种包依赖关系的入口），而不是项目访问的入口
   // 官网描述：指示 webpack 应该使用哪个模块，来作为构建其内部依赖图的开始
   entry: {
-    app: [ resolve('../src/index.js') ],
-    dashboard: [ resolve('../src/dashboard.js') ]
+    app: [ resolve(PATH_SRC_ROOT, 'pages/app') ],
+    dashboard: [ resolve(PATH_SRC_ROOT, 'pages/dashboard') ]
   },
 
   // output为项目打包后的输出位置
   // 官网描述：告诉 webpack 在哪里输出它所创建的 bundles，以及如何命名这些文件，默认值为 ./dist
   output: {
-    path: resolve('../dist'), // path为打包后的输出文件夹位置，此处为 ./dist文件夹
+    path: resolve(PATH_ROOT, 'dist'), // path为打包后的输出文件夹位置，此处为 ./dist文件夹
     filename: 'js/[name].[hash].js', // 打包后的入口文件的文件名
     chunkFilename: 'chunks/[name].[hash:4].js' // 非入口文件的文件名
   },
@@ -74,7 +76,7 @@ const webpackConfigBase = {
       {
         test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
         exclude: /node_modules/,
-        include: [ resolve('../public/images') ],
+        include: [ resolve(PATH_ROOT, 'public/images') ],
         loader: 'url-loader',
         options: {
           limit: 8192,
@@ -98,19 +100,19 @@ const webpackConfigBase = {
     // 为项目生成一个可以访问的html文件，否则全是.js文件，没有访问的页面入口。默认为index.html,路径是基于根目录的相对路径
     new HtmlWebpackPlugin({
       filename: 'index.html', // 打包输出的html文件名,当多入口时，必须配置此项，否则会报输出文件名相同错误
-      template: './scripts/templates/index.html', // 引用模板html文件生成项目的入口文件html
+      template: resolve(PATH_ROOT, 'scripts/templates/index.html'), // 引用模板html文件生成项目的入口文件html
       chunks: [ 'index' ] // 将指定名称的脚本注入到html模板中
       // templateContent: require('./templates/index'),  // 将内容直接覆盖到html模板中，通常从js文件中引入
       // inject: false  // 如果为false, 则禁止在html模板中注入脚本
     }),
     new HtmlWebpackPlugin({
       filename: 'dashboard.html', // 打包输出的html文件名
-      template: './scripts/templates/dashboard.html', // 引用模板html文件生成项目的入口文件html
+      template: resolve(PATH_ROOT, 'scripts/templates/dashboard.html'), // 引用模板html文件生成项目的入口文件html
       chunks: [ 'dashboard' ] // 将指定名称的脚本注入到html模板中
     }),
     new MiniCssExtractPlugin({
-      filename: 'css/[name].[contenthash].css',
-      chunkFilename: 'css/[name].[contenthash].[id].css'
+      filename: isProduction ? 'css/[name].[contenthash].css' : 'css/[name].css',
+      chunkFilename: isProduction ? 'css/[name].[contenthash].[id].css' : 'css/[name].[id].css'
     })
   ]
 }
