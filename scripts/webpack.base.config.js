@@ -99,9 +99,9 @@ const webpackConfigBase = {
   plugins: [
     // 为项目生成一个可以访问的html文件，否则全是.js文件，没有访问的页面入口。默认为index.html,路径是基于根目录的相对路径
     new HtmlWebpackPlugin({
-      filename: 'index.html', // 打包输出的html文件名,当多入口时，必须配置此项，否则会报输出文件名相同错误
-      template: resolve(PATH_ROOT, 'scripts/templates/index.html'), // 引用模板html文件生成项目的入口文件html
-      chunks: [ 'index' ] // 将指定名称的脚本注入到html模板中
+      filename: 'app.html', // 打包输出的html文件名,当多入口时，必须配置此项，否则会报输出文件名相同错误
+      template: resolve(PATH_ROOT, 'scripts/templates/app.html'), // 引用模板html文件生成项目的入口文件html
+      chunks: [ 'app' ] // 将指定名称的脚本注入到html模板中
       // templateContent: require('./templates/index'),  // 将内容直接覆盖到html模板中，通常从js文件中引入
       // inject: false  // 如果为false, 则禁止在html模板中注入脚本
     }),

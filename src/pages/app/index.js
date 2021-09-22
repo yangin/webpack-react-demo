@@ -1,18 +1,11 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import { Button } from 'antd'
-import 'antd/dist/antd.less'
-import './index.less'
+import { AppRouter } from './configs/router'
 
 const App = () => {
   return (
     <div className="index-container">
-      <div>
-        <span>Hello React Hot</span>
-      </div>
-      <div>
-        <Button type="primary">Click</Button>
-      </div>
+      <AppRouter/>
     </div>
   )
 }

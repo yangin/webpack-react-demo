@@ -16,8 +16,15 @@ const webpackConfigDev = {
     hot: true,
     open: true, // 启动后是否在浏览器自动打开
     host: 'localhost',
-    port: 8090
+    port: 8090,
     // historyApiFallback: true, // 为true时，当路径找不到时，即404时，会重新加载本页面，否则报错。当react-router为BrowserRouter时，需要配置为true,否则原路径刷新报错，此时也可以用HashRoute来代替
+    historyApiFallback: {
+      rewrites: [
+        { from: /^\/(app|app\/)/, to: '/app.html' },
+        { from: /^\/(dashboard|dashboard\/)/, to: '/dashboard.html' },
+        { from: /./, to: '/app.html' }
+      ]
+    }
     // compress: true, // enable gzip compression
     // proxy: { // proxy URLs to backend development server
     //   '/api': 'http://localhost:3000'
