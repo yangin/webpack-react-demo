@@ -1,9 +1,10 @@
-import React from 'react'
-import ReactEcharts from 'echarts-for-react'
+import React, { lazy } from 'react'
 import { Button } from 'antd'
 import { withRouter } from 'react-router-dom'
 import { CHARTS_OPTIONS } from '../../constants'
 import './styles.less'
+
+const ReactEcharts = lazy(()=>import('echarts-for-react'))
 
 const Home = (props) => {
   const onGoBack = () => {

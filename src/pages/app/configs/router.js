@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-dom'
 
 import Home from '../containers/Home'
@@ -9,13 +9,15 @@ import NotFound from '../../../components/NotFound'
 export const AppRouter = () => {
   return (
     <Router >
-      <Switch>
-        <Redirect exact to="/app/login" from="/" />
-        <Redirect exact to="/app/login" from="/app" />
-        <Route exact path="/app/login" component={Login} />
-        <Route exact path="/app/home" component={Home} />
-        <Route path="*" component={NotFound} />
-      </Switch>
+      <Suspense fallback={<div>Loading...</div>}>
+        <Switch>
+          <Redirect exact to="/app/login" from="/" />
+          <Redirect exact to="/app/login" from="/app" />
+          <Route exact path="/app/login" component={Login} />
+          <Route exact path="/app/home" component={Home} />
+          <Route path="*" component={NotFound} />
+        </Switch>
+      </Suspense>
     </Router>
   )
 }
