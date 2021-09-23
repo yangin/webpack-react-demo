@@ -990,3 +990,140 @@ npm run build
 
 打开浏览器访问效果
 ![](https://raw.githubusercontent.com/yangin/code-assets/main/webpack-react-demo/images/7-4-2.png)
+
+## 八、拆包
+
+因为一个页面加载资源越多（如首屏），加载消耗的时间就会越长，会影响用户体验。所以，在优化页面渲染时，一个思路就是将不需要的资源包给拆分出来，按需加载，从而达到减小bundle体积的目的。
+
+#### 第一步： 找出可懒加载的资源包，采用懒加载方式引入
+
+在本例中，echarts资源包非首屏加载必须，且包本身体积较大，故可以拆分出来，按需加载
+
+src/pages/app/containers/Home/index.js
+
+```diff
+- import React from 'react'
++ import React, { lazy } from 'react'
+- import ReactEcharts from 'echarts-for-react'
+...
+
++ const ReactEcharts = lazy(()=>import('echarts-for-react'))
+
+const Home = (props) => {
+  ...
+
+  return (
+    <div>
+      ...
+      <div className='echart-container'>
+        <ReactEcharts option={CHARTS_OPTIONS} />
+      </div>
+      ...
+    </div>
+  )
+}
+
+export default Home
+```
+
+src/pages/app/configs/router.js
+
+```diff
+- import React from 'react'
++ import React, { Suspense } from 'react'
+...
+
+export const AppRouter = () => {
+  return (
+    <Router >
++     <Suspense fallback={<div>Loading...</div>}>
+        <Switch>
+         ...
+        </Switch>
++     </Suspense>
+    </Router>
+  )
+}
+```
+
+注意，在使用react的 lazy 时， 需要同时添加 Suspense 组件，来完善懒加载的过度效果
+
+#### 第二步： 在webpack配置文件中，将懒加载的资源拆成单独的包
+
+```javascript
+...
+const webpackConfigBase = {
+  ...
+    optimization: {
+      ...
+       // 内置的拆包API
+      splitChunks: {
+        chunks: 'all', // 共有三个值可选：initial(初始模块)、async(按需加载模块)和all(全部模块)
+        minSize: 30000, // 模块超过30k自动被抽离成公共模块
+        minChunks: 1, // 模块被引用>=1次，便分割
+        name: false, // 默认由模块名+hash命名，名称相同时多个模块将合并为1个，可以设置为function
+        automaticNameDelimiter: '~', // 命名分隔符
+        cacheGroups: {
+          // default会将自定义代码部分默认打成一个包，即src里的js代码
+          default: { // 模块缓存规则，设置为false，默认缓存组将禁用
+            minChunks: 2, // 模块被引用>=2次，拆分至vendors公共模块
+            priority: -20, // 优先级，优先级越高则越先拆包，即对于同一个依赖包，该依赖包会优先被打包进优先级高的包里
+            reuseExistingChunk: true // 默认使用已有的模块
+          },
+          // vendor将node_modules文件夹下的内容都统一打包到wendor中，因为一般第三方插件的内容不会轻易改变
+          // 此处也是拆包的重点区域，因为node_module里的内容太多，打出来的包会很大，在首页一次加载会影响加载速度，所以会将一些不常用且非必须的包拆出来，
+          // 如echart等，后面通过动态加载的方式引进来
+          vendor: {
+            test: /[\\/]node_modules[\\/]/, // 匹配的规则，可以为文件夹，也可以为具体的文件，如 指定文件夹/[\\/]node_modules[\\/]/,待指定后缀文件 /\.(css|less)$/,具体文件/base.less|index.less/
+            name: 'vendor', // 此处的name,即为打包后包的name
+            priority: -10, // 确定模块打入的优先级
+            reuseExistingChunk: true, // 使用复用已经存在的模块
+            enforce: true
+          },
+          styles: {
+            test: /\.(css|less)$/,
+            name: 'styles',
+            priority: 10, // 确定模块打入的优先级
+            chunks: 'all',
+            enforce: true
+          },
+          echarts: {
+            test: /[\\/]node_modules[\\/]echarts|echarts-for-react/,
+            name: 'echarts',
+            priority: 16,
+            reuseExistingChunk: true
+          }
+        }
+      }
+    }
+    ...
+}
+```
+
+#### 第三步： 打包并验证结果
+
+```
+npm run build
+```
+
+* 拆包前
+
+拆包前，app.js是所有js内容的集合，包括node_modules里的antd及echarts等，体积为1.2M， 当加载login页面时，会加载整个app.js，会将其中的echarts部分也加载进来，造成了不必要资源的时间消耗。
+
+![](https://raw.githubusercontent.com/yangin/code-assets/main/webpack-react-demo/images/8-3-1.png)
+
+![](https://raw.githubusercontent.com/yangin/code-assets/main/webpack-react-demo/images/8-3-2.png)
+
+* 拆包后
+
+拆包后，会将echarts资源单独拆成一个包，而node_modules里的资源会一起打包到vendor中，app.js中只包含了业务代码部分。当采用懒加载方式加载login页面时，只加载了app.js与vender.js部分, 而未加载echarts的资源包，当在家home页面时，会再加载echarts的资源包，这样，就减少了首屏不必要资源的加载消耗时间，实现了性能上的优化。
+
+![](https://raw.githubusercontent.com/yangin/code-assets/main/webpack-react-demo/images/8-3-3.png)
+
+![](https://raw.githubusercontent.com/yangin/code-assets/main/webpack-react-demo/images/8-3-4.png)
+
+![](https://raw.githubusercontent.com/yangin/code-assets/main/webpack-react-demo/images/8-3-5.png)
+
+当echarts拆包后，在代码中未采用懒加载引入时，同样在首屏会一起加载echars这个资源包。同样大小的资源，最后拆成了多个资源包一起加载下来，不但不会减少加载时间，反而会增加，因为发起http请求是比较耗时的。
+
+![](https://raw.githubusercontent.com/yangin/code-assets/main/webpack-react-demo/images/8-3-6.png)
