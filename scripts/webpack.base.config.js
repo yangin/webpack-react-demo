@@ -87,6 +87,7 @@ const webpackConfigBase = {
       },
       {
         test: /\.(css|less)$/,
+        exclude: /node_modules/,
         use: [ {
           loader: MiniCssExtractPlugin.loader // MiniCssExtractPlugin.loader 需要在css-loader之后解析
         },
@@ -126,6 +127,7 @@ const webpackConfigBase = {
       // loader-font
       {
         test: /\.(woff|eot|ttf|svg|gif)$/,
+        exclude: /node_modules/,
         loader: 'url-loader',
         options: {
           limit: 8192,
