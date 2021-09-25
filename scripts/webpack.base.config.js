@@ -1,3 +1,4 @@
+const { cpus } = require('os')
 const { resolve } = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
@@ -10,6 +11,9 @@ const PATH_ROOT = resolve(__dirname, '../')
 const PATH_SRC_ROOT = resolve(__dirname, '../src/')
 
 const cacheLoader = { loader: 'cache-loader', options: { cacheDirectory: resolve(PATH_ROOT, '.cache/cache-loader/') } }
+const BUILD_CPU_COUNT = Number(cpus().length) || 2
+const getThreadLoader = ({ isProduction }) => ({ loader: 'thread-loader', options: { workers: BUILD_CPU_COUNT, poolParallelJobs: 64, poolTimeout: isProduction ? 500 : Infinity } })
+
 
 const webpackConfigBase = {
   // entery为webpack解析的入口（解析各种包依赖关系的入口），而不是项目访问的入口
@@ -81,6 +85,7 @@ const webpackConfigBase = {
         test: /\.js$/,
         exclude: /node_modules/,
         use: [
+          getThreadLoader({isProduction}),
           cacheLoader,
           {
             loader: 'babel-loader',
@@ -95,29 +100,30 @@ const webpackConfigBase = {
       {
         test: /\.(css|less)$/,
         exclude: /node_modules/,
-        use: [ {
-          loader: MiniCssExtractPlugin.loader // MiniCssExtractPlugin.loader 需要在css-loader之后解析
-        },
-        cacheLoader,
-        'css-loader',
-        {
-          loader: 'postcss-loader', // postcss需要放在css之前，其他语言(less、sass等)之后，进行解析
-          options: {
-            postcssOptions: {
-              plugins: [
-                require('autoprefixer')() // 给css自动添加前缀
-              ]
+        use: [ 
+          {
+            loader: MiniCssExtractPlugin.loader // MiniCssExtractPlugin.loader 需要在css-loader之后解析
+          },
+          cacheLoader,
+          'css-loader',
+          {
+            loader: 'postcss-loader', // postcss需要放在css之前，其他语言(less、sass等)之后，进行解析
+            options: {
+              postcssOptions: {
+                plugins: [
+                  require('autoprefixer')() // 给css自动添加前缀
+                ]
+              }
             }
-          }
-        },
-        {
-          loader: 'less-loader',
-          options: {
-            lessOptions: {
-              javascriptEnabled: true
+          },
+          {
+            loader: 'less-loader',
+            options: {
+              lessOptions: {
+                javascriptEnabled: true
+              }
             }
-          }
-        } // 当解析antd.less，必须写成下面格式，否则会报Inline JavaScript is not enabled错误
+          } // 当解析antd.less，必须写成下面格式，否则会报Inline JavaScript is not enabled错误
         ]
       },
       // loader-image
