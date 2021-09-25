@@ -1127,3 +1127,218 @@ npm run build
 当echarts拆包后，在代码中未采用懒加载引入时，同样在首屏会一起加载echars这个资源包。同样大小的资源，最后拆成了多个资源包一起加载下来，不但不会减少加载时间，反而会增加，因为发起http请求是比较耗时的。
 
 ![](https://raw.githubusercontent.com/yangin/code-assets/main/webpack-react-demo/images/8-3-6.png)
+
+## 九、打包优化
+
+#### 第一步：引入打包测速工具 speed-measure-webpack-plugin
+
+```
+npm i speed-measure-webpack-plugin -D
+```
+
+webpack.prod.config.js
+
+```diff
+...
++ const SpeedMeasurePlugin = require('speed-measure-webpack-plugin')
+
+...
++ const smp = new SpeedMeasurePlugin()
+
+...
+- module.exports = merge(webpackConfigBase, webpackConfigProd)
++ module.exports = smp.wrap(merge(webpackConfigBase, webpackConfigProd))
+
+```
+
+最终打包输出如图：
+
+![](https://raw.githubusercontent.com/yangin/code-assets/main/webpack-react-demo/images/9-1-1.png)
+
+注意 此处引入的 speed-measure-webpack-plugin@1.5.0, 需要将 mini-css-extract-plugin的版本降到 1.3.6 才能正常使用，否则可能会报错"You forgot to add 'mini-css-extract-plugin' plugin "。
+
+#### 第二步：通过 exclude、include 来筛选打包内容
+
+我们可以通过 exclude、include 配置来确保转译尽可能少的文件。顾名思义，exclude 指定要排除的文件，include 指定要包含的文件。
+
+exclude 的优先级高于 include，在 include 和 exclude 中使用绝对路径数组，尽量避免 exclude，更倾向于使用 include。
+webpack.base.config.js
+
+```javascript
+//...
+const webpackConfigBase = {
+  //...
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        use: {
+          //...
+        }
+      },
+      //...
+    ]
+  } 
+}  
+```
+
+#### 第三步：cache-loader
+
+在一些性能开销较大的 loader 之前添加 cache-loader，将结果缓存中磁盘中。
+
+```
+npm i cache-loader -D
+```
+
+cache-loader 的配置很简单，放在其他 loader 之前即可。
+
+webpack.base.config.js
+
+```diff
+//...
++ const cacheLoader = { loader: 'cache-loader', options: { cacheDirectory: resolve(PATH_ROOT, '.cache/cache-loader/') } }
+
+const webpackConfigBase = {
+  //...
+ module: {
+    rules: [
+      {
+        test: /\.js$/,
+        use: [
++         cacheLoader,
+          {
+            loader: 'babel-loader',
+            //...
+          }
+        ]
+      },
+      {
+        test: /\.(css|less)$/,
+        exclude: /node_modules/,
+        use: [ 
+        {
+          loader: MiniCssExtractPlugin.loader // MiniCssExtractPlugin.loader 需要在css-loader之后解析
+        },
++       cacheLoader,
+        'css-loader',
+        {
+          loader: 'postcss-loader', // postcss需要放在css之前，其他语言(less、sass等)之后，进行解析
+          // ...
+        },
+        {
+          loader: 'less-loader',
+          // ...
+        } // 当解析antd.less，必须写成下面格式，否则会报Inline JavaScript is not enabled错误
+        ]
+      },
+      // ...
+    ]
+ }
+}  
+```
+
+注意: 在css-loader 中，cache-loader需要放在 MiniCssExtractPlugin.loader 后，css-loader 前
+
+当只给 babel-loader 配置 cache 的话，也可以不使用 cache-loader，给 babel-loader 增加选项 cacheDirectory。
+
+```diff
+//...
+const webpackConfigBase = {
+  //...
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        use: {
+            loader: 'babel-loader',
+            options: {
++              cacheDirectory: !isDevMode && resolve(PATH_ROOT, '.cache/babel-loader/'), //默认值为 false。当有设置时，指定的目录将用来缓存 loader 的执行结果。之后的 Webpack 构建，将会尝试读取缓存，来避免在每次执行时，可能产生的、高性能消耗的 Babel 重新编译过程。
+              // cacheCompression: false,
+              presets: [ '@babel/preset-react' ]
+            }
+          } 
+      },
+      // ...
+    ]
+  }
+}
+```
+
+编译输出
+
+* 使用cache前
+
+![](https://raw.githubusercontent.com/yangin/code-assets/main/webpack-react-demo/images/9-3-1.png)
+
+* 使用cache后
+
+![](https://raw.githubusercontent.com/yangin/code-assets/main/webpack-react-demo/images/9-3-2.png)
+
+从上图可见，babel-loader 与 css-loader等的编译时间有明显缩短
+
+#### 第三步：thread-loader
+
+由于有大量文件需要解析和处理，构建是文件读写和计算密集型的操作，特别是当文件数量变多后，Webpack 构建慢的问题会显得严重。文件读写和计算操作是无法避免的.
+
+thread-loader 利用多核CPU, 把任务分解给多个子进程去并发的执行，子进程处理完后再把结果发送给主进程。从而实现 Webpack 同一时刻处理多个任务。
+
+把这个 loader 放置在其他 loader 之前， 放置在这个 loader 之后的 loader 就会在一个单独的 worker 池(worker pool)中运行
+
+在 worker 池(worker pool)中运行的 loader 是受到限制的。例如：
+
+* 这些 loader 不能产生新的文件。
+* 这些 loader 不能使用定制的 loader API（也就是说，通过插件）。
+* 这些 loader 无法获取 webpack 的选项设置。
+
+安装thread-loader
+
+```
+npm i thread-loader -D
+```
+
+修改配置
+webpack.base.config.js
+
+```diff
+//...
++ const { cpus } = require('os')
+
++ const BUILD_CPU_COUNT = Number(cpus().length) || 2
++ const getThreadLoader = ({ isProduction }) => ({ loader: 'thread-loader', options: { workers: BUILD_CPU_COUNT, poolParallelJobs: 64, poolTimeout: isProduction ? 500 : Infinity } })
+
+const webpackConfigBase = {
+  //...
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        use: [
++         getThreadLoader({isProduction}),
+          {
+            loader: 'cache-loader',
+            options: {
+              cacheDirectory: isProduction && resolve(PATH_ROOT, '.cache/cache-loader/')
+            }
+          },
+          {
+            loader: 'babel-loader',
+            options: {
+              // cacheDirectory: isProduction && resolve(PATH_ROOT, '.cache/babel-loader/'), //默认值为 false。当有设置时，指定的目录将用来缓存 loader 的执行结果。之后的 Webpack 构建，将会尝试读取缓存，来避免在每次执行时，可能产生的、高性能消耗的 Babel 重新编译过程。
+              // cacheCompression: false,
+              presets: [ '@babel/preset-react' ]
+            }
+          }
+        ]
+      },
+      //...
+    ]
+  } 
+}  
+```
+
+注意：因为work中的loader无法产生新的文件，所以在处理css这种管道流程时，是无法使用的。
+
+至此，完成了webpack的编译优化。
