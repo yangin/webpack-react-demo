@@ -9,6 +9,8 @@ const isProduction = process.env.NODE_ENV === 'production'
 const PATH_ROOT = resolve(__dirname, '../')
 const PATH_SRC_ROOT = resolve(__dirname, '../src/')
 
+const cacheLoader = { loader: 'cache-loader', options: { cacheDirectory: resolve(PATH_ROOT, '.cache/cache-loader/') } }
+
 const webpackConfigBase = {
   // entery为webpack解析的入口（解析各种包依赖关系的入口），而不是项目访问的入口
   // 官网描述：指示 webpack 应该使用哪个模块，来作为构建其内部依赖图的开始
@@ -78,12 +80,17 @@ const webpackConfigBase = {
       {
         test: /\.js$/,
         exclude: /node_modules/,
-        use: {
-          loader: 'babel-loader',
-          options: {
-            presets: [ '@babel/preset-react' ]
+        use: [
+          cacheLoader,
+          {
+            loader: 'babel-loader',
+            options: {
+              // cacheDirectory: isProduction && resolve(PATH_ROOT, '.cache/babel-loader/'), //默认值为 false。当有设置时，指定的目录将用来缓存 loader 的执行结果。之后的 Webpack 构建，将会尝试读取缓存，来避免在每次执行时，可能产生的、高性能消耗的 Babel 重新编译过程。
+              // cacheCompression: false,
+              presets: [ '@babel/preset-react' ]
+            }
           }
-        }
+        ]
       },
       {
         test: /\.(css|less)$/,
@@ -91,6 +98,7 @@ const webpackConfigBase = {
         use: [ {
           loader: MiniCssExtractPlugin.loader // MiniCssExtractPlugin.loader 需要在css-loader之后解析
         },
+        cacheLoader,
         'css-loader',
         {
           loader: 'postcss-loader', // postcss需要放在css之前，其他语言(less、sass等)之后，进行解析
