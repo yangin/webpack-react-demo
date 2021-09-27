@@ -1,27 +1,24 @@
-const { cpus } = require('os')
 const { resolve } = require('path')
-const HtmlWebpackPlugin = require('html-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 
-// 获取当前的环境变量process.env.NODE_ENV
-// NODE_ENV值一般在package.json文件中通过脚本命令定义，如cross-env NODE_ENV=production
-const isProduction = process.env.NODE_ENV === 'production'
-
-const PATH_ROOT = resolve(__dirname, '../')
-const PATH_SRC_ROOT = resolve(__dirname, '../src/')
-
-const cacheLoader = { loader: 'cache-loader', options: { cacheDirectory: resolve(PATH_ROOT, '.cache/cache-loader/') } }
-const BUILD_CPU_COUNT = Number(cpus().length) || 2
-const getThreadLoader = ({ isProduction }) => ({ loader: 'thread-loader', options: { workers: BUILD_CPU_COUNT, poolParallelJobs: 64, poolTimeout: isProduction ? 500 : Infinity } })
-
+const {  
+  PATH_ROOT,
+  isProduction,
+  getEntryOption,
+  getHtmlWebpackPluginList,
+  getThreadLoader,
+  getCacheLoader,
+  getBabelLoader,
+  getPostCssLoader,
+  getLessLoader,
+  getImgUrlLoader,
+  getFontUrlLoader
+} = require('./webpack.option.config')
 
 const webpackConfigBase = {
   // entery为webpack解析的入口（解析各种包依赖关系的入口），而不是项目访问的入口
   // 官网描述：指示 webpack 应该使用哪个模块，来作为构建其内部依赖图的开始
-  entry: {
-    app: [ resolve(PATH_SRC_ROOT, 'pages/app') ],
-    dashboard: [ resolve(PATH_SRC_ROOT, 'pages/dashboard') ]
-  },
+  entry: getEntryOption(),
 
   // output为项目打包后的输出位置
   // 官网描述：告诉 webpack 在哪里输出它所创建的 bundles，以及如何命名这些文件，默认值为 ./dist
@@ -86,15 +83,8 @@ const webpackConfigBase = {
         exclude: /node_modules/,
         use: [
           getThreadLoader({isProduction}),
-          cacheLoader,
-          {
-            loader: 'babel-loader',
-            options: {
-              // cacheDirectory: isProduction && resolve(PATH_ROOT, '.cache/babel-loader/'), //默认值为 false。当有设置时，指定的目录将用来缓存 loader 的执行结果。之后的 Webpack 构建，将会尝试读取缓存，来避免在每次执行时，可能产生的、高性能消耗的 Babel 重新编译过程。
-              // cacheCompression: false,
-              presets: [ '@babel/preset-react' ]
-            }
-          }
+          getCacheLoader(),
+          getBabelLoader()
         ]
       },
       {
@@ -104,26 +94,10 @@ const webpackConfigBase = {
           {
             loader: MiniCssExtractPlugin.loader // MiniCssExtractPlugin.loader 需要在css-loader之后解析
           },
-          cacheLoader,
+          getCacheLoader(),
           'css-loader',
-          {
-            loader: 'postcss-loader', // postcss需要放在css之前，其他语言(less、sass等)之后，进行解析
-            options: {
-              postcssOptions: {
-                plugins: [
-                  require('autoprefixer')() // 给css自动添加前缀
-                ]
-              }
-            }
-          },
-          {
-            loader: 'less-loader',
-            options: {
-              lessOptions: {
-                javascriptEnabled: true
-              }
-            }
-          } // 当解析antd.less，必须写成下面格式，否则会报Inline JavaScript is not enabled错误
+          getPostCssLoader(), // postcss需要放在css之前，其他语言(less、sass等)之后，进行解析
+          getLessLoader()
         ]
       },
       // loader-image
@@ -131,40 +105,20 @@ const webpackConfigBase = {
         test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
         exclude: /node_modules/,
         include: [ resolve(PATH_ROOT, 'public/images') ],
-        loader: 'url-loader',
-        options: {
-          limit: 8192,
-          name: '[name].[ext]',
-          outputPath: '/images'
-        }
+        use: getImgUrlLoader()
       },
       // loader-font
       {
         test: /\.(woff|eot|ttf|svg|gif)$/,
         exclude: /node_modules/,
-        loader: 'url-loader',
-        options: {
-          limit: 8192,
-          name: 'font/[name].[ext]'
-        }
+        use: getFontUrlLoader()
       }
     ]
   },
 
   plugins: [
     // 为项目生成一个可以访问的html文件，否则全是.js文件，没有访问的页面入口。默认为index.html,路径是基于根目录的相对路径
-    new HtmlWebpackPlugin({
-      filename: 'app.html', // 打包输出的html文件名,当多入口时，必须配置此项，否则会报输出文件名相同错误
-      template: resolve(PATH_ROOT, 'scripts/templates/app.html'), // 引用模板html文件生成项目的入口文件html
-      chunks: [ 'app' ] // 将指定名称的脚本注入到html模板中
-      // templateContent: require('./templates/index'),  // 将内容直接覆盖到html模板中，通常从js文件中引入
-      // inject: false  // 如果为false, 则禁止在html模板中注入脚本
-    }),
-    new HtmlWebpackPlugin({
-      filename: 'dashboard.html', // 打包输出的html文件名
-      template: resolve(PATH_ROOT, 'scripts/templates/dashboard.html'), // 引用模板html文件生成项目的入口文件html
-      chunks: [ 'dashboard' ] // 将指定名称的脚本注入到html模板中
-    }),
+    ...getHtmlWebpackPluginList(),
     new MiniCssExtractPlugin({
       filename: isProduction ? 'css/[name].[contenthash].css' : 'css/[name].css',
       chunkFilename: isProduction ? 'css/[name].[contenthash].[id].css' : 'css/[name].[id].css'
