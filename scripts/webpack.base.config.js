@@ -3,6 +3,7 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 
 const {  
   PATH_ROOT,
+  PATH_SRC_ROOT,
   isProduction,
   getEntryOption,
   getHtmlWebpackPluginList,
@@ -26,6 +27,11 @@ const webpackConfigBase = {
     path: resolve(PATH_ROOT, 'dist'), // path为打包后的输出文件夹位置，此处为 ./dist文件夹
     filename: 'js/[name].[hash].js', // 打包后的入口文件的文件名
     chunkFilename: 'chunks/[name].[hash:4].js' // 非入口文件的文件名
+  },
+
+  resolve: {
+    extensions: [ '.tsx', '.ts', '.js' ],  // 代码中使用越多的后缀越靠前，可以提升匹配效率
+    modules: [ 'node_modules', PATH_SRC_ROOT ]
   },
 
   optimization: {
@@ -79,7 +85,7 @@ const webpackConfigBase = {
   module: {
     rules: [
       {
-        test: /\.js$/,
+        test: /\.(ts|js)x?$/,
         exclude: /node_modules/,
         use: [
           getThreadLoader({isProduction}),

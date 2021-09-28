@@ -53,7 +53,11 @@ const getBabelLoader = () => ({
     options: {
         // cacheDirectory: isProduction && resolve(PATH_ROOT, '.cache/babel-loader/'), //默认值为 false。当有设置时，指定的目录将用来缓存 loader 的执行结果。之后的 Webpack 构建，将会尝试读取缓存，来避免在每次执行时，可能产生的、高性能消耗的 Babel 重新编译过程。
         // cacheCompression: false,
-        presets: [ '@babel/preset-react' ]
+        configFile: false, babelrc: false, // do NOT use `babel.config.js`
+        presets: [ 
+            '@babel/preset-react',
+            [ '@babel/preset-typescript', { isTSX: true, allExtensions: true, allowNamespaces: true } ]
+        ],
     }
 })
 const getPostCssLoader = () => ({ loader: 'postcss-loader', options: { postcssOptions: { plugins: [ require('autoprefixer')() ] } } }) // 给css自动添加前缀
