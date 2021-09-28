@@ -1342,3 +1342,83 @@ const webpackConfigBase = {
 注意：因为work中的loader无法产生新的文件，所以在处理css这种管道流程时，是无法使用的。
 
 至此，完成了webpack的编译优化。
+
+## 十、集成typescript
+
+#### 第一步：安装 typescript、@babel/preset-typescript
+
+```
+npm i typescript @babel/preset-typescript -D
+```
+
+#### 第二步：调整babel-loader配置
+
+webpack.option.config.js
+
+```diff
+//...
+const getBabelLoader = () => ({
+    loader: 'babel-loader',
+    options: {
+        configFile: false, babelrc: false, // do NOT use `babel.config.js`
+        presets: [ 
+            '@babel/preset-react',
++            [ '@babel/preset-typescript', { isTSX: true, allExtensions: true, allowNamespaces: true } ]
+        ],
+    }
+})
+//...
+```
+
+#### 第三步：增加对 tsx、ts 后缀文件的解析
+
+webpack.option.config.js
+
+```diff
+//...
+const {  
+  PATH_ROOT,
++ PATH_SRC_ROOT,
+  isProduction,
+  getEntryOption,
+  getHtmlWebpackPluginList,
+  getThreadLoader,
+  getCacheLoader,
+  getBabelLoader,
+  getPostCssLoader,
+  getLessLoader,
+  getImgUrlLoader,
+  getFontUrlLoader
+} = require('./webpack.option.config')
+
+const webpackConfigBase = {
+  //...
++ resolve: {
++   extensions: [ '.tsx', '.ts', '.js' ],  // 代码中使用越多的后缀越靠前，可以提升匹配效率
++   modules: [ 'node_modules', PATH_SRC_ROOT ]
++ },
+
+  module: {
+      rules: [
+        {
+-         test: /\.js$/,
++         test: /\.(ts|js)x?$/,
+          exclude: /node_modules/,
+          use: [
+            getThreadLoader({isProduction}),
+            getCacheLoader(),
+            getBabelLoader()
+          ]
+        },
+        //...
+      ]  
+  }
+}  
+//...
+```
+
+#### 第四步：添加tsx、ts文件，并打包验证
+
+![](https://raw.githubusercontent.com/yangin/code-assets/main/webpack-react-demo/images/10-4-1.png)
+
+至此，完成了对typescript的集成
