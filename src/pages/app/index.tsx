@@ -5,7 +5,7 @@ import { AppRouter } from './configs/router'
 const App = () => {
   return (
     <div className="index-container">
-      <AppRouter/>
+      <AppRouter />
     </div>
   )
 }

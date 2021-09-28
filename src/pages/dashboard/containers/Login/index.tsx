@@ -3,9 +3,15 @@ import { Button } from 'antd'
 import { withRouter } from 'react-router-dom'
 import './styles.less'
 
-const Login = (props) => {
+type LoginProps = {
+  history: Object
+}
+
+const Login = (props: LoginProps) => {
+  const { history } = props
+
   const onLogin = () => {
-    props.history.push({ pathname: '/dashboard/home', params: 'yangjin' })
+    history.push({ pathname: '/dashboard/home', params: 'yangjin' })
     console.log('这是登录按钮')
   }
 

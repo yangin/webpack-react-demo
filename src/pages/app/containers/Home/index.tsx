@@ -4,11 +4,17 @@ import { withRouter } from 'react-router-dom'
 import { CHARTS_OPTIONS } from '../../constants'
 import './styles.less'
 
-const ReactEcharts = lazy(()=>import('echarts-for-react'))
+const ReactEcharts = lazy(() => import('echarts-for-react'))
 
-const Home = (props) => {
+type HomeProps = {
+  history: Object
+}
+
+const Home = (props: HomeProps) => {
+  const { history } = props
+
   const onGoBack = () => {
-    props.history.push({ pathname: '/notfound', params: 'yangjin' })
+    history.push({ pathname: '/notfound', params: 'yangjin' })
     console.log('这是返回按钮按钮')
   }
 
