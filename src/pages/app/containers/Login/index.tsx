@@ -1,7 +1,7 @@
 import React from 'react'
 import { Button } from 'antd'
 import { withRouter } from 'react-router-dom'
-import './styles.less'
+import { StyledLogin } from './styles'
 
 type LoginProps = {
   history: Object
@@ -16,14 +16,14 @@ const Login = (props: LoginProps) => {
   }
 
   return (
-    <div>
+    <StyledLogin>
       <div>
         <span>Login</span>
       </div>
       <div>
         <Button type="primary" onClick={onLogin}>登录</Button>
       </div>
-    </div>
+    </StyledLogin>
   )
 }
 

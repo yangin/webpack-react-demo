@@ -57,6 +57,9 @@ const getBabelLoader = () => ({
     presets: [
       '@babel/preset-react',
       [ '@babel/preset-typescript', { isTSX: true, allExtensions: true, allowNamespaces: true } ]
+    ],
+    plugins: [
+      'babel-plugin-styled-components'
     ]
   }
 })

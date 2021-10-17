@@ -1,4 +1,5 @@
 const { resolve } = require('path')
+const { DefinePlugin } = require('webpack')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 
 const {
@@ -128,7 +129,9 @@ const webpackConfigBase = {
     new MiniCssExtractPlugin({
       filename: isProduction ? 'css/[name].[contenthash].css' : 'css/[name].css',
       chunkFilename: isProduction ? 'css/[name].[contenthash].[id].css' : 'css/[name].[id].css'
-    })
+    }),
+    // 优化styled-components开发性能 https://github.com/styled-components/styled-components/blob/master/CHANGELOG.md#v410---2018-11-12、https://github.com/styled-components/styled-components/blob/master/packages/styled-components/src/constants.js#L18
+    new DefinePlugin({ SC_DISABLE_SPEEDY: false })
   ]
 }
 module.exports = webpackConfigBase
