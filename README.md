@@ -1422,3 +1422,89 @@ const webpackConfigBase = {
 ![](https://raw.githubusercontent.com/yangin/code-assets/main/webpack-react-demo/images/10-4-1.png)
 
 至此，完成了对typescript的集成
+
+## 十一、集成styled-components
+
+### 第一步：安装 styled-components 、 babel-plugin-styled-components
+
+```shell
+npm i styled-components
+npm i babel-plugin-styled-components -D
+```
+
+### 第二步：在babel-loader 中添加  babel-plugin-styled-components
+
+webpack.option.config.js
+
+```diff
+const getBabelLoader = () => ({
+  loader: 'babel-loader',
+  options: {
+    configFile: false, babelrc: false, // do NOT use `babel.config.js`
+    presets: [
+      '@babel/preset-react',
+      [ '@babel/preset-typescript', { isTSX: true, allExtensions: true, allowNamespaces: true } ]
+    ],
++   plugins: [
++     'babel-plugin-styled-components'
++   ]
+  }
+})
+```
+
+### 第三步：优化styled-components开发性能
+
+webpack.base.config.js
+
+```diff
++ const { DefinePlugin } = require('webpack')
+
+const webpackConfigBase = {
+  ...
+  plugins: [
+    ...
++   // 优化styled-components开发性能 
++   new DefinePlugin({ SC_DISABLE_SPEEDY: false })
+  ]
+}
+
+```
+
+### 第四步： 在页面中添加styled-components代码并验证
+
+Login/styles.ts
+
+```javascript
+import styled from 'styled-components'
+
+export const StyledLogin = styled.div`
+    width: 600px;
+    height: 800px;
+    background-color: #ff0;
+`
+```
+
+Login/index.tsx
+
+```diff
++ import { StyledLogin } from './styles'
+
+
+const Login = (props: LoginProps) => {
+
+  //...
+
+  return (
++   <StyledLogin>
+    ...
++   </StyledLogin>
+  )
+}
+
+export default withRouter(Login)
+```
+
+第五步：执行并验证
+![](https://raw.githubusercontent.com/yangin/code-assets/main/webpack-react-demo/images/11-5-1.png)
+
+如图，可见已完成styled-components集成。
