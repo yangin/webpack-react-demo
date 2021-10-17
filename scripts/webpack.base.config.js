@@ -1,7 +1,7 @@
 const { resolve } = require('path')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 
-const {  
+const {
   PATH_ROOT,
   PATH_SRC_ROOT,
   isProduction,
@@ -30,7 +30,7 @@ const webpackConfigBase = {
   },
 
   resolve: {
-    extensions: [ '.tsx', '.ts', '.js' ],  // 代码中使用越多的后缀越靠前，可以提升匹配效率
+    extensions: [ '.tsx', '.ts', '.js' ], // 代码中使用越多的后缀越靠前，可以提升匹配效率
     modules: [ 'node_modules', PATH_SRC_ROOT ]
   },
 
@@ -88,7 +88,7 @@ const webpackConfigBase = {
         test: /\.(ts|js)x?$/,
         exclude: /node_modules/,
         use: [
-          getThreadLoader({isProduction}),
+          getThreadLoader({ isProduction }),
           getCacheLoader(),
           getBabelLoader()
         ]
@@ -96,7 +96,7 @@ const webpackConfigBase = {
       {
         test: /\.(css|less)$/,
         exclude: /node_modules/,
-        use: [ 
+        use: [
           {
             loader: MiniCssExtractPlugin.loader // MiniCssExtractPlugin.loader 需要在css-loader之后解析
           },
