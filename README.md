@@ -1508,3 +1508,45 @@ export default withRouter(Login)
 ![](https://raw.githubusercontent.com/yangin/code-assets/main/webpack-react-demo/images/11-5-1.png)
 
 如图，可见已完成styled-components集成。
+
+## 十二、 集成stylelint
+
+[参考官方文档](https://styled-components.com/docs/tooling#stylelint)
+
+### 第一步： 安装相关依赖
+
+```
+npm i -D stylelint stylelint-processor-styled-components stylelint-config-styled-components stylelint-config-recommended
+```
+
+### 第二步：在根目录下添加.stylelintrc 文件
+
+.stylelintrc
+
+```json
+{
+  "processors": [
+    "stylelint-processor-styled-components"
+  ],
+  "extends": [
+    "stylelint-config-recommended",
+    "stylelint-config-styled-components"
+  ]
+}
+```
+
+### 第三步：在package.json中添加执行脚本
+
+```json
+{
+  "scripts": {
+    "lint:css":"stylelint ./src/"
+  }
+}
+```
+
+### 第四步： 验证
+
+![](https://raw.githubusercontent.com/yangin/code-assets/main/webpack-react-demo/images/12-4-1.png)
+
+如图，可见已完成stylelint集成。
