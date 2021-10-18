@@ -6,7 +6,8 @@
   "scripts": {
     "build": "NODE_ENV=production webpack --config ./scripts/webpack.prod.config.js",
     "start": "webpack serve --config ./scripts/webpack.dev.config.js",
-    "lint": "npx eslint ./src/ ./scripts/"
+    "lint": "npx eslint ./src/ ./scripts/",
+    "lint:css":"stylelint ./src/"
   },
   "repository": {
     "type": "git",
@@ -52,6 +53,10 @@
     "postcss-loader": "^6.1.0",
     "speed-measure-webpack-plugin": "^1.5.0",
     "style-loader": "^2.0.0",
+    "stylelint": "^13.13.1",
+    "stylelint-config-recommended": "^5.0.0",
+    "stylelint-config-styled-components": "^0.1.1",
+    "stylelint-processor-styled-components": "^1.10.0",
     "thread-loader": "^3.0.4",
     "typescript": "^4.4.3",
     "url-loader": "^4.1.1",
