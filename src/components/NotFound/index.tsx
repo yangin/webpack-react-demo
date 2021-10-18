@@ -1,6 +1,6 @@
 import React from 'react'
 import { Button } from 'antd'
-import './styles.less'
+import { StyledNotFound } from './styles'
 
 const NotFound = () => {
   const onGoBack = () => {
@@ -8,14 +8,14 @@ const NotFound = () => {
   }
 
   return (
-    <div>
-      <div className="container">
+    <StyledNotFound>
+      <div>
         <span>这是NotFound页</span>
       </div>
       <div>
         <Button type="primary" onClick={onGoBack}>返回</Button>
       </div>
-    </div>
+    </StyledNotFound>
   )
 }
 

@@ -2,7 +2,7 @@ import React, { lazy } from 'react'
 import { Button } from 'antd'
 import { withRouter } from 'react-router-dom'
 import { CHARTS_OPTIONS } from '../../constants'
-import './styles.less'
+import { StyledHome } from './styles'
 
 const ReactEcharts = lazy(() => import('echarts-for-react'))
 
@@ -19,7 +19,7 @@ const Home = (props: HomeProps) => {
   }
 
   return (
-    <div>
+    <StyledHome>
       <div>
         <span>这是Home页</span>
       </div>
@@ -29,7 +29,7 @@ const Home = (props: HomeProps) => {
       <div>
         <Button type="primary" onClick={onGoBack}>返回</Button>
       </div>
-    </div>
+    </StyledHome>
   )
 }
 

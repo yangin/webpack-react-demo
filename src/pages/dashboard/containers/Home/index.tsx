@@ -4,7 +4,7 @@ import ReactEcharts from 'echarts-for-react'
 import { Button } from 'antd'
 import { withRouter } from 'react-router-dom'
 import { CHARTS_OPTIONS } from '../../constants'
-import './styles.less'
+import { StyledDashboardHome } from './styles'
 
 type HomeProps = {
   history: Object
@@ -19,7 +19,7 @@ const Home = (props: HomeProps) => {
   }
 
   return (
-    <div>
+    <StyledDashboardHome>
       <div>
         <span>这是Dashboard Home页</span>
       </div>
@@ -29,7 +29,7 @@ const Home = (props: HomeProps) => {
       <div>
         <Button type="primary" onClick={onGoBack}>返回</Button>
       </div>
-    </div>
+    </StyledDashboardHome>
   )
 }
 
