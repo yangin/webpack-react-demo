@@ -64,7 +64,6 @@ const getBabelLoader = () => ({
   }
 })
 const getPostCssLoader = () => ({ loader: 'postcss-loader', options: { postcssOptions: { plugins: [ require('autoprefixer')() ] } } }) // 给css自动添加前缀
-const getLessLoader = () => ({ loader: 'less-loader', options: { lessOptions: { javascriptEnabled: true } } }) // 当解析antd.less，必须写成下面格式，否则会报Inline JavaScript is not enabled错误
 const getImgUrlLoader = () => ({ loader: 'url-loader', options: { limit: 8192, name: '[name].[ext]', outputPath: '/images' } })
 const getFontUrlLoader = () => ({ loader: 'url-loader', options: { limit: 8192, name: '[name].[ext]', outputPath: '/fonts' } })
 
@@ -79,7 +78,6 @@ module.exports = {
   getCacheLoader,
   getBabelLoader,
   getPostCssLoader,
-  getLessLoader,
   getImgUrlLoader,
   getFontUrlLoader
 }

@@ -12,7 +12,6 @@ const {
   getCacheLoader,
   getBabelLoader,
   getPostCssLoader,
-  getLessLoader,
   getImgUrlLoader,
   getFontUrlLoader
 } = require('./webpack.option.config')
@@ -66,7 +65,7 @@ const webpackConfigBase = {
           enforce: true
         },
         styles: {
-          test: /\.(css|less)$/,
+          test: /\.css$/,
           name: 'styles',
           priority: 10, // 确定模块打入的优先级
           chunks: 'all',
@@ -95,7 +94,7 @@ const webpackConfigBase = {
         ]
       },
       {
-        test: /\.(css|less)$/,
+        test: /\.css$/,
         exclude: /node_modules/,
         use: [
           {
@@ -103,8 +102,7 @@ const webpackConfigBase = {
           },
           getCacheLoader(),
           'css-loader',
-          getPostCssLoader(), // postcss需要放在css之前，其他语言(less、sass等)之后，进行解析
-          getLessLoader()
+          getPostCssLoader() // postcss需要放在css之前，其他语言(less、sass等)之后，进行解析
         ]
       },
       // loader-image
