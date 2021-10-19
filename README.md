@@ -1550,3 +1550,111 @@ npm i -D stylelint stylelint-processor-styled-components stylelint-config-styled
 ![](https://raw.githubusercontent.com/yangin/code-assets/main/webpack-react-demo/images/12-4-1.png)
 
 如图，可见已完成stylelint集成。
+
+## 十三、 集成单元测试jest
+
+[官方文档](https://jestjs.io/docs/getting-started)
+
+### 第一步： 安装jest相关
+
+```shell
+npm i jest @types/jest babel-jest -D
+```
+
+### 第二步： 在根目录下新建jest.config.js文件，并配置
+
+```javascript
+module.exports = {
+  moduleDirectories: [ 'node_modules', 'src', 'test' ],
+  transform: {
+    '^.+\\.(ts|tsx|js|jsx)?$': 'babel-jest'
+  }
+}
+```
+
+### 第三步：在根目录下新建babel.config.js文件，并配置
+
+安装@babel/preset-env
+
+```shell
+npm i @babel/preset-env -D
+```
+
+```javascript
+module.exports = {
+  'presets': [
+    '@babel/preset-env',
+    [ '@babel/preset-typescript', { isTSX: true, allExtensions: true, allowNamespaces: true } ]
+  ]
+}
+```
+
+注意：这里的babel-jest只能读取根目录下的babel.config.js 文件里的配置，所以如果根目录没有的话，需要创建
+
+### 第四步：在package.json中添加执行脚本
+
+```diff
+{
+  "scripts": {
+    ...
++   "test": "jest"
+    ...
+  },
+}
+```
+
+### 第五步：在test目录下新建 .test.js文件，并编写测试用例
+
+test/utils.test.js
+
+```javascript
+import { encodeJSON, decodeJSON } from '../src/utils/base64'
+
+describe('Base64 test', () => {
+  test('EncodeJSON', () => {
+    const testData = {
+      mode: 'solo',
+      payEntrance: '立即购买',
+      from: 'pricing'
+    }
+    const testSuccess = '%7B%22mode%22%3A%22solo%22%2C%22payEntrance%22%3A%22%E7%AB%8B%E5%8D%B3%E8%B4%AD%E4%B9%B0%22%2C%22from%22%3A%22pricing%22%7D'
+
+    expect(encodeJSON(testData)).toBe(testSuccess)
+  })
+  test('DecodeJSON', () => {
+    const testData = '%7B"mode"%3A"solo"%2C"payEntrance"%3A"立即购买"%2C"from"%3A"pricing"%7D'
+    const testSuccess = {
+      from: 'pricing',
+      mode: 'solo',
+      payEntrance: '立即购买'
+    }
+
+    expect(decodeJSON(testData)).toEqual(testSuccess)
+  })
+})
+```
+
+注意：编写后，eslint会提醒describe、test、expect等未定义，需要在.eslintrc.js中添加全局变量声明配置
+.eslintrc.js
+
+```diff
+module.exports = {
+  ...
++ 'globals': {
++   // jest
++   'describe': true,
++   'test': true,
++   'expect': true
++ }
+}
+```
+
+### 第六步: 执行test脚本，并验证结果
+
+```shell
+npm run test
+```
+
+![](https://raw.githubusercontent.com/yangin/code-assets/main/webpack-react-demo/images/13-5-1.png)
+
+如图，可见已跑完jest并测试通过。
