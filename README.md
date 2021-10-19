@@ -1706,3 +1706,69 @@ npx husky-init && npm install
 ![](https://raw.githubusercontent.com/yangin/code-assets/main/webpack-react-demo/images/14-3-2.png)
 
 当执行pre-commit的脚本时，如果出现了报错，则会中断git commit, 并返回报错信息
+
+## 第十五、集成commitlint
+
+*commitlint 用来约束commit msg的格式*
+
+[commitlint官方文档](https://github.com/conventional-changelog/commitlint)
+
+### 第一步： 在husky中添加 commit-msg hooks
+
+```shell
+npx husky add .husky/commit-msg 'npx --no-install commitlint --edit "$1"'
+```
+
+执行成功后，会新增一个 ./husky/commit-msg 文件
+
+### 第二步：安装 @commitlint/cli
+
+```
+npm i @commitlint/cli -D
+```
+
+注意，这里与官方文档不同，这里省略安装了 `@commitlint/config-conventional` 这个配置文件， 因为本项目中的commit信息较简单，故自定义了。
+
+### 第三步：在项目根目录下添加.commitlintrc.js文件，并自定义配置
+
+.commitlintrc.js
+
+```javascript
+module.exports = {
+ rules: {
+  'header-max-length': [2, 'always', 120], // 要求内容长度<=120
+  'type-case': [2, 'always', 'upper-case'], // 要求type必须是大写
+  'type-empty': [2, 'never'],  // 要有type后必须有一个空格
+  'type-enum': [
+   2,
+   'always',
+   [
+    'RELEASE',
+    'CHORE',
+    'CI',
+    'DOCS',
+    'FEAT',
+    'FIX',
+    'PERF',
+    'REFACTOR',
+    'REVERT',
+    'STYLE',
+    'TEST',
+   ],
+  ],
+ }
+};
+```
+
+### 第四步 测试提交并验证结果
+
+```shell
+git add .
+git commit -m 'UPG: this is a test'
+```
+
+执行后结果如下
+
+![](https://raw.githubusercontent.com/yangin/code-assets/main/webpack-react-demo/images/15-3-1.png)
+
+如图，可见已成功拦截非法commit msg。 至此，完成了commitlint的集成。
