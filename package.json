@@ -6,9 +6,10 @@
   "scripts": {
     "build": "NODE_ENV=production webpack --config ./scripts/webpack.prod.config.js",
     "start": "webpack serve --config ./scripts/webpack.dev.config.js",
-    "lint": "npx eslint ./src/ ./scripts/",
+    "lint": "npx eslint ./src/ ./scripts/ ./test",
     "lint:css": "stylelint ./src/",
-    "test": "jest"
+    "test": "jest",
+    "prepare": "husky install"
   },
   "repository": {
     "type": "git",
@@ -50,6 +51,7 @@
     "eslint": "^7.30.0",
     "file-loader": "^6.2.0",
     "html-webpack-plugin": "^5.3.2",
+    "husky": "^7.0.0",
     "jest": "^27.3.0",
     "less": "^4.1.1",
     "less-loader": "^10.0.0",
