@@ -1658,3 +1658,51 @@ npm run test
 ![](https://raw.githubusercontent.com/yangin/code-assets/main/webpack-react-demo/images/13-5-1.png)
 
 如图，可见已跑完jest并测试通过。
+
+## 十四、集成Husky
+
+[husky官方文档](https://typicode.github.io/husky/#/)
+
+### 第一步：安装husky并初始化
+
+```shell
+npx husky-init && npm install
+```
+
+执行成功后，会在package.json中添加一个执行脚本
+
+```diff
+{
+  "scripts": {
+    ...
++   "prepare": "husky install"
+    ...
+  },
+```
+
+并在项目根目录下生成一个.husky文件夹，及 .husky/pre-commit 文件
+
+其中 .husky/pre-commit 中配置了提交前执行的脚本，默认`npm test`
+
+注意，这里的 .husky 必须与 .git 在同一目录层级下
+
+### 第二步：在.husky/pre-commit文件中添加预执行脚本
+
+.husky/pre-commit
+
+```diff
+- npm test
++ npm run lint
++ npm run lint:css
++ npm run test
+```
+
+### 第三步：故意调整出一个错误，并git commit 查看运行结果
+
+![](https://raw.githubusercontent.com/yangin/code-assets/main/webpack-react-demo/images/14-3-1.png)
+
+结果如图
+
+![](https://raw.githubusercontent.com/yangin/code-assets/main/webpack-react-demo/images/14-3-2.png)
+
+当执行pre-commit的脚本时，如果出现了报错，则会中断git commit, 并返回报错信息
