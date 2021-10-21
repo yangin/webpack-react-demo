@@ -1,0 +1,32 @@
+name: CI-TEST
+
+on:
+  # 所有分支非push操作都将触发此action
+  push:
+    branches: 
+      - '**'
+    # 当docs目录下的推送不触发该action  
+    paths-ignore:  
+      - 'docs/**'
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [14.x]
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+    timeout-minutes: 5
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v2
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    - run: npm ci   # npm 根据 package-lock.json文件内容安装npm资源包 https://docs.npmjs.com/cli/v7/commands/npm-ci
+    - run: npm run lint:css
+    - run: npm test
