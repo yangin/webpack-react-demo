@@ -1772,3 +1772,73 @@ git commit -m 'UPG: this is a test'
 ![](https://raw.githubusercontent.com/yangin/code-assets/main/webpack-react-demo/images/15-3-1.png)
 
 如图，可见已成功拦截非法commit msg。 至此，完成了commitlint的集成。
+
+## 十六、集成 GitHub Actions
+
+[GitHub Actions官方文档](https://docs.github.com/cn/actions)
+
+*github actions 是 github 官方提供的一个ci集成工具*
+
+### 第一步：为项目创建github actions，并编写ci脚本
+
+在github官网项目下的 Action Tab中创建, 如图
+![](https://raw.githubusercontent.com/yangin/code-assets/main/webpack-react-demo/images/16-1-1.png)
+
+![](https://raw.githubusercontent.com/yangin/code-assets/main/webpack-react-demo/images/16-1-2.png)
+
+### 第二步： 为ci编写workflow脚本，并提交commit
+
+[工作流程语法](https://docs.github.com/cn/actions/learn-github-actions/workflow-syntax-for-github-actions#)
+ci-test.yml
+
+```yml
+name: CI-TEST
+
+on:
+  # 所有分支非push操作都将触发此action
+  push:
+    branches: 
+      - '**'
+    # 当docs目录下的推送不触发该action  
+    paths-ignore:  
+      - 'docs/**'
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [14.x]
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+    timeout-minutes: 5
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v2
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    - run: npm ci   # npm 根据 package-lock.json文件内容安装npm资源包 https://docs.npmjs.com/cli/v7/commands/npm-ci
+    - run: npm run lint:css
+    - run: npm test
+
+```
+
+最终会在项目的根目录新建一个 .github/workflows/ci-test.yml 文件
+
+当push代码到github时，github会检查该目录的配置文件，并执行ci过程
+
+### 第三步： push一个commit并在github Action Tab中查看验证
+
+![](https://raw.githubusercontent.com/yangin/code-assets/main/webpack-react-demo/images/16-3-1.png)
+
+![](https://raw.githubusercontent.com/yangin/code-assets/main/webpack-react-demo/images/16-3-2.png)
+
+![](https://raw.githubusercontent.com/yangin/code-assets/main/webpack-react-demo/images/16-3-3.png)
+
+结果如上图，成功与失败的案例，无论成功与失败，我们都会收到一封来自github actions的邮件，来告知ci运行结果。
+
+至此，完成了github actions的集成。
