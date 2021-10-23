@@ -74,6 +74,8 @@
   },
   "dependencies": {
     "@babel/core": "^7.14.6",
+    "@sentry/react": "^6.13.3",
+    "@sentry/tracing": "^6.13.3",
     "antd": "^4.16.5",
     "echarts": "^5.2.0",
     "echarts-for-react": "^3.0.1",
