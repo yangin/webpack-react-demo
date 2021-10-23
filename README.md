@@ -1842,3 +1842,55 @@ jobs:
 结果如上图，成功与失败的案例，无论成功与失败，我们都会收到一封来自github actions的邮件，来告知ci运行结果。
 
 至此，完成了github actions的集成。
+
+## 十七、 集成sentry
+
+[sentry官网]()
+
+sentry是一个错误监控平台，将sdk集成进代码后，会自动捕捉并收集用户触发的Uncaught报错。
+
+sentry既支持采用官方的平台收集报错(有免费版)，也是开源的，支持[自己搭建检测平台](https://develop.sentry.dev/self-hosted/)。
+
+### 第一步：安装 @sentry/react @sentry/tracing
+
+```shell
+npm i @sentry/react @sentry/tracing
+```
+
+### 第二步： 在代码中初始化sentry
+
+```diff
+import React from "react";
+import ReactDOM from "react-dom";
++ import * as Sentry from "@sentry/react";
++ import { Integrations } from "@sentry/tracing";
+import App from "./App";
+
++ Sentry.init({
++  dsn: "https:/privatelykey@o1047059.ingest.sentry.io/6030723",
++  integrations: [new Integrations.BrowserTracing()],
++  tracesSampleRate: 1.0,
++ });
+
+ReactDOM.render(<App />, document.getElementById("root"));
+```
+
+其中，[dsn](https://docs.sentry.io/product/sentry-basics/dsn-explainer/#dsn-utilization) 为我们要上报issure的地址，每个项目对应一个，由sentry平台产生。
+
+注意： sentry的初始化要在整个项目的启动的最前面。
+
+### 第三步：上报并验证错误
+
+在代码中故意写错触发一个Uncaught报错，触发后如图
+
+![](https://raw.githubusercontent.com/yangin/code-assets/main/webpack-react-demo/images/17-3-1.png)
+
+然后在sentry.io平台可以接收到报错，如图
+
+![](https://raw.githubusercontent.com/yangin/code-assets/main/webpack-react-demo/images/17-3-2.png)
+
+![](https://raw.githubusercontent.com/yangin/code-assets/main/webpack-react-demo/images/17-3-3.png)
+
+如上图，我们可以找到报错的具体位置，就报错的触发步骤。
+
+至此，我们完成了sentry的简单集成。
