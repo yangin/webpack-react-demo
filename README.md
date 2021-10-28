@@ -1,5 +1,25 @@
 # 搭建一个react-webpack框架
 
+## 目录
+
+简介
+准备工作
+用 webpack5.x 集成 react 框架
+热更新
+配置文件拆分成Prod与Dev环境
+分离manifest
+多入口文件处理
+拆包
+打包优化
+集成typescript
+集成styled-components
+集成stylelint
+集成单元测试jest
+集成Husky
+集成commitlint
+集成 GitHub Actions
+集成sentry
+
 环境： webpack 5.x
 
 疑问：明明已经有create-react-app脚手架了，为何还要自己去用webpack去重新做一个脚手架？
