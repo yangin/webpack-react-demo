@@ -1,41 +1,38 @@
-# 搭建一个react-webpack框架
+# 用webpack搭建一个React框架
 
+## 背景
+
+create-react-app脚手架的问题
+
+1. 打包、拆包的细粒度不够。其在打包时，将node_module目录下所有包都打包到一个vender.chunk里，而所有自定义的js部分，都打包到一个default.chunk下的，且css也是直接在default内部的，未进行拆分，因此，其打包出来的这个资源包，会非常大。会影响资源的加载速度。尤其是首页的渲染速度。
+
+1. 其webpack的配置是隐藏的，因此当需要更多的自定义配置时，如处理less时，就需要调出webpack配置或重新引入一个文件进行覆盖，但又不知道原配置里是如何写的，因此这个覆盖的成本也是比较高的。
+
+ 因此，就需要我们自己定义一个webpack来进行开发框架的封装，根据实际项目需求来自己调整配置，从而提高开发效率并满足个性化的开发需求。
+
+<a id="目录"></a>
 ## 目录
-
-简介
-准备工作
-用 webpack5.x 集成 react 框架
-热更新
-配置文件拆分成Prod与Dev环境
-分离manifest
-多入口文件处理
-拆包
-打包优化
-集成typescript
-集成styled-components
-集成stylelint
-集成单元测试jest
-集成Husky
-集成commitlint
-集成 GitHub Actions
-集成sentry
-
-环境： webpack 5.x
-
-疑问：明明已经有create-react-app脚手架了，为何还要自己去用webpack去重新做一个脚手架？
-
-> 当然，create-react-app是一个很棒的脚手架了，我们查看其源码，知道其也是在webpack基础上封装的一个脚手架工具，再细看其配置内容，就知道为何需要自己封装一个自己的框架了。
-
-> 1.因为其在打包时，是将node_module目录下所有包都打包到一个vender.chunk里的，而所有自定义的js部分，都打包到一个default.chunk下的，且css也是直接在default内部的，未进行拆分，因此，其打包出来的这个资源包，会非常大。会影响资源的加载速度。尤其是首页的渲染速度。
-
-> 2.其webpack的配置是隐藏的，因此当需要更多的自定义配置时，如处理less时，就需要调出webpack配置或重新引入一个文件进行覆盖，但又不知道原配置里是如何写的，因此这个覆盖的成败也是比较高的。
-
-> 因此，就需要我们自己定义一个webpack来进行开发框架的封装，根据实际项目需求来自己调整配置，从而提高开发效率并满足个性化的开发需求。
-
-## 一、简介
-
+1. [简介](#简介)
+1. [准备工作](#准备工作)
+1. [用webpack5.x集成react框架](#用webpack5.x集成react框架)
+1. [热更新](#热更新)
+1. [配置文件拆分成Prod与Dev环境](#配置文件拆分成Prod与Dev环境)
+1. [分离manifest](#分离manifest)
+1. [多入口文件处理](#多入口文件处理)
+1. [拆包](#拆包)
+1. [打包优化](#打包优化)
+1. [集成Typescript](#集成Typescript)
+1. [集成styled-components](#集成styled-components)
+1. [集成stylelint](#集成stylelint)
+1. [集成单元测试jest](#集成单元测试jest)
+1. [集成Husky](#集成Husky)
+1. [集成commitlint](#集成commitlint)
+1. [集成GitHubActions](#集成GitHubActions)
+1. [集成Sentry](#集成Sentry)
+   
+<a id="简介"></a>
+## 简介
 webpack是javascript应用程序的一个资源打包器（核心功能）。再配合其插件（plugins）与转换(loader)功能，可以实现代码的解析与转换，从而十分方便的对代码进行打包构建。
-
 ### 优点
 
 * 通过对代码的打包（包括打包与拆包）降低页面资源的网络请求次数与单个资源包的大小，从而实现首屏的快速加载与页面的快速访问。
@@ -46,8 +43,14 @@ webpack是javascript应用程序的一个资源打包器（核心功能）。再
 
 * 配合其热更新功能，可以实现快速编码。
 
-## 二、准备工作
+**[⬆ 回到顶部](#目录)**
 
+<a id="准备工作"></a>
+## 准备工作
+
+### 版本
+
+webpack 5.x
 ### 搭建流程
 
 搭建一个react框架，需要做哪些事儿
@@ -154,12 +157,14 @@ dist/bundle.js 为生成的打包文件
 ```
 npx http-server
 ```
-
 ![](https://raw.githubusercontent.com/yangin/code-assets/main/webpack-react-demo/images/2-3-5-2.png)
 
 至此，完成了webpack打包环境的准备工作。
 
-## 三、用 webpack5.x 集成 react 框架
+**[⬆ 回到顶部](#目录)**
+
+<a id="用webpack5.x集成react框架"></a>
+## 用webpack5.x集成react框架
 
 ### 1. 构建一个html作为访问与渲染入口
 
@@ -364,7 +369,7 @@ npm install -D less-loader
 
 webpack.config.js
 
-```
+```javascript
 const webpackConfig = {
   ...
   //module此处为loader区域，一般文件内容解析，处理放在此处，如babel，less,postcss转换等
@@ -388,8 +393,7 @@ const webpackConfig = {
 javascriptEnabled=true,如下
 webpack.config.js
 
-```
-  
+```javascript
   //module此处为loader区域，一般文件内容解析，处理放在此处，如babel，less,postcss转换等
   module: {
     rules: [
@@ -501,7 +505,7 @@ npm install -D mini-css-extract-plugin
 
 webpack.config.js
 
-```
+```javascript
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 const webpackConfig = {
@@ -555,7 +559,7 @@ npm install -D url-loader file-loader
 第2步：在webpack.config.js文件里配置url-loader
 webpack.config.js
 
-```
+```javascript
 const webpackConfig = {
   ...
   //module此处为loader区域，一般文件内容解析，处理放在此处，如babel，less,postcss转换等
@@ -604,7 +608,10 @@ const webpackConfig = {
 
 至此， webpack 集成 react 开发相关的 插件已完毕，已可以正常完成编写打包，发布流程。
 
-## 四、 热更新
+**[⬆ 回到顶部](#目录)**
+
+<a id="热更新"></a>
+## 热更新
 
 为什么需要热更新？因为我们在开发时，经常需要调试代码，查看代码在浏览器中的效果，如果不通过热更新，那么每次的查看都需要 build一次代码，这个过程是非常费时的。
 
@@ -620,7 +627,7 @@ npm install -D webpack-dev-server
 
 webpack.config.js
 
-```
+```javascript
 //打包模式:'production' or development' 
 mode:'development',
 
@@ -659,7 +666,9 @@ npm run start
 
 至此，完成了webpack的热更新功能集成。
 
-## 五、将配置文件拆分成Prod与Dev环境
+**[⬆ 回到顶部](#目录)**
+<a id="配置文件拆分成Prod与Dev环境"></a>
+## 配置文件拆分成Prod与Dev环境
 
 如上，已完成了一个简单的react-webpack框架的集成与使用，但真正用到生产环境中时，咱们还需要做的更精细一些。
 
@@ -682,7 +691,7 @@ npm install -D webpakc-merge
 结果分别如下：
 webpack.base.config.js
 
-```
+```javascript
 const path = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
@@ -782,7 +791,7 @@ module.exports = webpackConfigBase
 
 webpack.dev.config.js
 
-```
+```javascript
 const path = require('path')
 const { merge } = require('webpack-merge')
 const webpackConfigBase = require('./webpack.base.config')
@@ -816,7 +825,7 @@ module.exports = merge(webpackConfigBase, webpackConfigDev)
 
 webpack.prod.config.js
 
-```
+```javascript
 const { merge } = require('webpack-merge')
 const webpackConfigBase = require('./webpack.base.config')
 
@@ -840,7 +849,10 @@ package.json
 
 至此，完成了webpack生产环境与开发环境下配置文件的拆分。
 
-## 六、分离manifest
+**[⬆ 回到顶部](#目录)**
+
+<a id="分离manifest"></a>
+## 分离manifest
 
 在使用 webpack 构建的典型应用程序或站点中，有三种主要的代码类型：
 
@@ -929,7 +941,10 @@ const webpackConfigBase = {
 
 如图，可见html中多了一段 `<script>` 脚本，其就是提取出来的manifest代码片段，与js文件夹下的 runtime-app.[hash].js内容一致
 
-## 七、多入口文件处理
+**[⬆ 回到顶部](#目录)**
+
+<a id="多入口文件处理"></a>
+## 多入口文件处理
 
 #### 第一步：新建一个html模板
 
@@ -1011,6 +1026,9 @@ npm run build
 打开浏览器访问效果
 ![](https://raw.githubusercontent.com/yangin/code-assets/main/webpack-react-demo/images/7-4-2.png)
 
+**[⬆ 回到顶部](#目录)**
+
+<a id="拆包"></a>
 ## 八、拆包
 
 因为一个页面加载资源越多（如首屏），加载消耗的时间就会越长，会影响用户体验。所以，在优化页面渲染时，一个思路就是将不需要的资源包给拆分出来，按需加载，从而达到减小bundle体积的目的。
@@ -1148,7 +1166,10 @@ npm run build
 
 ![](https://raw.githubusercontent.com/yangin/code-assets/main/webpack-react-demo/images/8-3-6.png)
 
-## 九、打包优化
+**[⬆ 回到顶部](#目录)**
+
+<a id="打包优化"></a>
+## 打包优化
 
 #### 第一步：引入打包测速工具 speed-measure-webpack-plugin
 
@@ -1363,7 +1384,10 @@ const webpackConfigBase = {
 
 至此，完成了webpack的编译优化。
 
-## 十、集成typescript
+**[⬆ 回到顶部](#目录)**
+
+<a id="集成Typescript"></a>
+## 集成Typescript
 
 #### 第一步：安装 typescript、@babel/preset-typescript
 
@@ -1442,6 +1466,10 @@ const webpackConfigBase = {
 ![](https://raw.githubusercontent.com/yangin/code-assets/main/webpack-react-demo/images/10-4-1.png)
 
 至此，完成了对typescript的集成
+
+**[⬆ 回到顶部](#目录)**
+
+<a id="集成styled-components"></a>
 
 ## 十一、集成styled-components
 
@@ -1529,6 +1557,9 @@ export default withRouter(Login)
 
 如图，可见已完成styled-components集成。
 
+**[⬆ 回到顶部](#目录)**
+
+<a id="集成stylelint"></a>
 ## 十二、 集成stylelint
 
 [参考官方文档](https://styled-components.com/docs/tooling#stylelint)
@@ -1571,7 +1602,10 @@ npm i -D stylelint stylelint-processor-styled-components stylelint-config-styled
 
 如图，可见已完成stylelint集成。
 
-## 十三、 集成单元测试jest
+**[⬆ 回到顶部](#目录)**
+
+<a id="集成单元测试jest"></a>
+## 集成单元测试jest
 
 [官方文档](https://jestjs.io/docs/getting-started)
 
@@ -1679,7 +1713,11 @@ npm run test
 
 如图，可见已跑完jest并测试通过。
 
-## 十四、集成Husky
+
+**[⬆ 回到顶部](#目录)**
+
+<a id="集成Husky"></a>
+## 集成Husky
 
 [husky官方文档](https://typicode.github.io/husky/#/)
 
@@ -1727,7 +1765,10 @@ npx husky-init && npm install
 
 当执行pre-commit的脚本时，如果出现了报错，则会中断git commit, 并返回报错信息
 
-## 第十五、集成commitlint
+**[⬆ 回到顶部](#目录)**
+
+<a id="集成commitlint"></a>
+## 集成commitlint
 
 *commitlint 用来约束commit msg的格式*
 
@@ -1793,7 +1834,10 @@ git commit -m 'UPG: this is a test'
 
 如图，可见已成功拦截非法commit msg。 至此，完成了commitlint的集成。
 
-## 十六、集成 GitHub Actions
+**[⬆ 回到顶部](#目录)**
+
+<a id="集成GitHubActions"></a>
+## 集成GitHubActions
 
 [GitHub Actions官方文档](https://docs.github.com/cn/actions)
 
@@ -1863,7 +1907,9 @@ jobs:
 
 至此，完成了github actions的集成。
 
-## 十七、 集成sentry
+**[⬆ 回到顶部](#目录)**
+<a id="集成Sentry"></a>
+## 集成Sentry
 
 [sentry官网]()
 
@@ -1914,3 +1960,5 @@ ReactDOM.render(<App />, document.getElementById("root"));
 如上图，我们可以找到报错的具体位置，就报错的触发步骤。
 
 至此，我们完成了sentry的简单集成。
+
+**[⬆ 回到顶部](#目录)**
